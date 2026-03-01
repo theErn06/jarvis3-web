@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jarvis Smart Fridge - Login</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  </head>
+  <body class="auth-body">
+    <div class="auth-wrapper animate-fade-in">
+      <div class="auth-card" id="login-view">
+        <h2>Jarvis Assistant</h2>
+        <div class="subtitle">System Login</div>
+        <div class="input-group">
+          <input type="text" id="login-user" placeholder="Username" />
+        </div>
+        <div class="input-group">
+          <input type="password" id="login-pass" placeholder="Password" />
+        </div>
+        <button
+          class="primary-btn"
+          onclick="handleAuth('login')"
+          id="btn-login"
+        >
+          <span class="btn-text">Login</span>
+          <div class="spinner"></div>
+        </button>
+        <div class="message error" id="login-msg"></div>
+        <div class="auth-actions">
+          <span onclick="showAuthView('change-pass-view')"
+            >Change Password?</span
+          ><span onclick="showAuthView('signup-view')">Sign Up</span>
+        </div>
+        <div style="margin-top: 30px; color: #7f8c8d; font-size: 14px">
+          Version 4
+        </div>
+      </div>
+
+      <div class="auth-card" id="signup-view" style="display: none">
+        <h2>Create Account</h2>
+        <div class="subtitle">Register New User</div>
+        <div class="input-group">
+          <input type="text" id="signup-user" placeholder="Choose Username" />
+        </div>
+        <div class="input-group">
+          <input
+            type="password"
+            id="signup-pass"
+            placeholder="Choose Password"
+          />
+        </div>
+        <button
+          class="primary-btn"
+          onclick="handleAuth('signup')"
+          id="btn-signup"
+        >
+          <span class="btn-text">Sign Up</span>
+          <div class="spinner"></div>
+        </button>
+        <button class="text-btn" onclick="showAuthView('login-view')">
+          Back to Login
+        </button>
+        <div class="message error" id="signup-msg"></div>
+      </div>
+
+      <div class="auth-card" id="change-pass-view" style="display: none">
+        <h2>Change Password</h2>
+        <div class="subtitle">Update Credentials</div>
+        <div class="input-group">
+          <input type="text" id="cp-user" placeholder="Username" />
+        </div>
+        <div class="input-group">
+          <input type="password" id="cp-old" placeholder="Old Password" />
+        </div>
+        <div class="input-group">
+          <input type="password" id="cp-new" placeholder="New Password" />
+        </div>
+        <button
+          class="primary-btn"
+          onclick="handleAuth('change_password')"
+          id="btn-cp"
+        >
+          <span class="btn-text">Update</span>
+          <div class="spinner"></div>
+        </button>
+        <button class="text-btn" onclick="showAuthView('login-view')">
+          Cancel
+        </button>
+        <div class="message error" id="cp-msg"></div>
+      </div>
+    </div>
+    <script>
+      const API_URL =
+        "https://script.google.com/macros/s/AKfycbwR3LH7qkeNNNZgEhOSMFqXZcO9xyVF7DiQau7gDxcTJ6ljtgD4EwrIm8tmC-B-fMpMag/exec";
+      function showAuthView(viewId) {
+        $(".auth-card").hide();
+        $("#" + viewId).show();
+        $(".error").text("");
+        $("input").val("");
+      }
+      function handleAuth(action) {
+        let payload = { action: action };
+        let msgBox, btn;
+        if (action === "login") {
+          payload.username = $("#login-user").val();
+          payload.password = $("#login-pass").val();
+          msgBox = $("#login-msg");
+          btn = $("#btn-login");
+        } else if (action === "signup") {
+          payload.username = $("#signup-user").val();
+          payload.password = $("#signup-pass").val();
+          msgBox = $("#signup-msg");
+          btn = $("#btn-signup");
+        } else if (action === "change_password") {
+          payload.username = $("#cp-user").val();
+          payload.old_password = $("#cp-old").val();
+          payload.new_password = $("#cp-new").val();
+          msgBox = $("#cp-msg");
+          btn = $("#btn-cp");
+        }
+        msgBox.text("");
+        btn
+          .prop("disabled", true)
+          .find(".btn-text")
+          .hide()
+          .end()
+          .find(".spinner")
+          .show();
+        $.ajax({
+          url: API_URL,
+          method: "POST",
+          data: JSON.stringify(payload),
+          contentType: "text/plain",
+          success: function (response) {
+            btn.prop("disabled", false).find(".spinner").hide();
+            btn.find(".btn-text").show();
+            let res;
+            try {
+              res =
+                typeof response === "object" ? response : JSON.parse(response);
+            } catch (e) {
+              msgBox.text("Server returned invalid data.");
+              return;
+            }
+            if (res.status === "success") {
+              if (action === "login" || action === "signup") {
+                if (action === "signup")
+                  alert("Account created! Logging you in...");
+                sessionStorage.setItem("currentUser", payload.username);
+                sessionStorage.setItem("currentPass", payload.password);
+                window.location.href = "inventory.html";
+              } else if (action === "change_password") {
+                alert("Password changed! Please login again.");
+                showAuthView("login-view");
+              }
+            } else {
+              msgBox.text(res.message);
+            }
+          },
+          error: function () {
+            btn
+              .prop("disabled", false)
+              .find(".spinner")
+              .hide()
+              .end()
+              .find(".btn-text")
+              .show();
+            msgBox.text("Connection failed.");
+          },
+        });
+      }
+    </script>
+  </body>
+</html>
