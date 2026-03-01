@@ -113,10 +113,20 @@ body, html {
 /* =========================================
    TABLES & CARDS
    ========================================= */
-.table-responsive { overflow-x: auto; width: 100%; background: #fff; padding: 20px; border-radius: 10px; box-shadow: var(--shadow); }
+.table-responsive { 
+  overflow-x: auto; 
+  width: 100%; 
+  background: #fff; 
+  padding: 20px; 
+  border-radius: 10px; 
+  box-shadow: var(--shadow); 
+  -webkit-overflow-scrolling: touch; 
+}
 .mobile-controls { display: none; }
+table.dataTable { border-collapse: collapse !important; width: 100% !important; margin: 0 !important; }
 table.dataTable thead th { text-align: left; color: #555; border-bottom: 2px solid #ddd; padding: 15px 10px; background: #fff; }
 table.dataTable tbody td { padding: 15px 10px; border-bottom: 1px solid #f0f0f0; color: #444; background: #fff; text-align: center; }
+table.dataTable tbody tr:hover { background-color: #f8f9fa !important; }
 
 .card { background: var(--bg-white); border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid #eee; }
 .info-card h3 { margin-top: 0; color: #2c3e50; font-size: 20px; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; }
@@ -135,7 +145,7 @@ table.dataTable tbody td { padding: 15px 10px; border-bottom: 1px solid #f0f0f0;
    ========================================= */
 .jarvis-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; flex: 1; min-height: 0; }
 .chat-container { width: 100%; height: 100%; background: #fff; border-radius: 12px; box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #eee; }
-.chat-history { flex: 1; padding: 20px; overflow-y: auto; background: #fdfdfd; display: flex; flex-direction: column; }
+.chat-history { flex: 1; padding: 20px; overflow-y: auto; background: #fdfdfd; display: flex; flex-direction: column; gap: 15px; }
 
 .chat-msg { display: flex; margin-bottom: 15px; max-width: 85%; align-items: flex-end; }
 .user-msg { align-self: flex-end; flex-direction: row-reverse; }
@@ -159,7 +169,6 @@ table.dataTable tbody td { padding: 15px 10px; border-bottom: 1px solid #f0f0f0;
 .send-btn { background: var(--primary); color: white; }
 
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-
 
 /* =========================================
    THE ULTIMATE MOBILE HEIGHT & UI LOCK
@@ -226,7 +235,7 @@ table.dataTable tbody td { padding: 15px 10px; border-bottom: 1px solid #f0f0f0;
     
     .icon-btn { width: 44px; height: 44px; z-index: 50; position: relative; }
     
-    /* Mobile Tables */
+    /* Mobile Tables (Standard Table Format with Horizontal Scrolling) */
     .mobile-controls { display: flex !important; gap: 10px; margin-bottom: 15px; flex-shrink: 0;}
     .dataTables_filter, .dataTables_length { display: none !important; } 
     .mobile-search-box { flex: 2; position: relative; }
@@ -234,62 +243,15 @@ table.dataTable tbody td { padding: 15px 10px; border-bottom: 1px solid #f0f0f0;
     .mobile-sort-box { flex: 1; }
     .mobile-sort-box select { width: 100%; padding: 10px; border-radius: 20px; border: 1px solid #eee; background: white; outline: none; }
     
-    table.dataTable thead { display: none; }
-    table.dataTable tbody tr { display: block; background: #fff; margin-bottom: 15px; border-radius: 10px; box-shadow: var(--shadow); padding: 15px; border: 1px solid #eee; }
-    table.dataTable tbody td { display: flex; justify-content: space-between; text-align: right; padding: 10px 0; border-bottom: 1px solid #f9f9f9; font-size: 0.95rem; }
-    table.dataTable tbody td:last-child { border-bottom: none; }
-    table.dataTable tbody td::before { content: attr(data-label); font-weight: 700; color: #999; font-size: 0.8rem; text-transform: uppercase; }
-}
-
-/* =========================================================
-   MOBILE TABLE FIX: Horizontally Scrollable Normal Table 
-   (Overrides the Card View)
-========================================================= */
-@media screen and (max-width: 768px) {
-  /* 1. Force all table elements back to their native table behavior */
-  table.display, table.dataTable {
-    display: table !important;
-    width: 100% !important;
-    min-width: 550px !important; /* Forces the table to stay wide so it scrolls */
-  }
-  table.display thead, table.dataTable thead {
-    display: table-header-group !important;
-  }
-  table.display tbody, table.dataTable tbody {
-    display: table-row-group !important;
-  }
-  table.display tr, table.dataTable tr {
-    display: table-row !important;
-    border: none !important;
-    margin: 0 !important;
-    box-shadow: none !important;
-    background-color: transparent !important;
-  }
-  table.display th, table.display td,
-  table.dataTable th, table.dataTable td {
-    display: table-cell !important;
-    text-align: left !important;
-    padding: 12px 10px !important;
-    border-bottom: 1px solid #eee !important;
-    white-space: nowrap !important; /* Prevents text from squishing awkwardly */
-  }
-
-  /* 2. Hide any generated "labels" from the old card view */
-  table.display td::before, table.dataTable td::before {
-    content: none !important;
-    display: none !important;
-  }
-
-  /* 3. Create a smooth horizontal scroll container */
-  .table-responsive {
-    display: block !important;
-    width: 100% !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    -webkit-overflow-scrolling: touch !important; /* Smooth momentum scrolling for iOS */
-    border-radius: 8px;
-    border: 1px solid #eee;
-    background: #fff;
-    margin-bottom: 20px;
-  }
+    /* Ensure the table stays wide enough to trigger scrolling, preventing squished text */
+    .table-responsive table.dataTable,
+    .table-responsive table.display {
+        min-width: 550px !important;
+        white-space: nowrap !important;
+    }
+    
+    /* Keep chat elements accessible */
+    .chat-msg {
+        max-width: 95%;
+    }
 }
