@@ -240,3 +240,56 @@ table.dataTable tbody td { padding: 15px 10px; border-bottom: 1px solid #f0f0f0;
     table.dataTable tbody td:last-child { border-bottom: none; }
     table.dataTable tbody td::before { content: attr(data-label); font-weight: 700; color: #999; font-size: 0.8rem; text-transform: uppercase; }
 }
+
+/* =========================================================
+   MOBILE TABLE FIX: Horizontally Scrollable Normal Table 
+   (Overrides the Card View)
+========================================================= */
+@media screen and (max-width: 768px) {
+  /* 1. Force all table elements back to their native table behavior */
+  table.display, table.dataTable {
+    display: table !important;
+    width: 100% !important;
+    min-width: 550px !important; /* Forces the table to stay wide so it scrolls */
+  }
+  table.display thead, table.dataTable thead {
+    display: table-header-group !important;
+  }
+  table.display tbody, table.dataTable tbody {
+    display: table-row-group !important;
+  }
+  table.display tr, table.dataTable tr {
+    display: table-row !important;
+    border: none !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+  }
+  table.display th, table.display td,
+  table.dataTable th, table.dataTable td {
+    display: table-cell !important;
+    text-align: left !important;
+    padding: 12px 10px !important;
+    border-bottom: 1px solid #eee !important;
+    white-space: nowrap !important; /* Prevents text from squishing awkwardly */
+  }
+
+  /* 2. Hide any generated "labels" from the old card view */
+  table.display td::before, table.dataTable td::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  /* 3. Create a smooth horizontal scroll container */
+  .table-responsive {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important; /* Smooth momentum scrolling for iOS */
+    border-radius: 8px;
+    border: 1px solid #eee;
+    background: #fff;
+    margin-bottom: 20px;
+  }
+}
