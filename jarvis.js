@@ -1,22 +1,43 @@
 // ==========================================
-// 1. GLOBAL VARIABLES
+// 1. SMART IP REDIRECTOR (FIXES 404 ERROR)
 // ==========================================
+function extractCleanIp(inputString) {
+    if (!inputString) return null;
+    // Magically extracts just the IPv4 address, ignoring http://, ports, or extra text
+    let match = inputString.match(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/);
+    return match ? match[0] : inputString.replace(/^https?:\/\//, '').split(':')[0].replace(/\/$/, "");
+}
 
-// --- Authentication & Inventory Variables ---
+let currentHost = window.location.hostname;
+
+// If user opens jarvis.html on GitHub, prompt and redirect instantly to local PC
+if (currentHost.includes('github.io')) {
+    let savedIp = localStorage.getItem("jarvis_ip");
+    let rawIp = prompt("Jarvis Direct Link:\n\nYou are on the cloud version. To connect, please enter the IP shown on your Arduino Display (e.g., 192.168.1.10):", savedIp || "");
+    
+    if (rawIp) {
+        let cleanIp = extractCleanIp(rawIp);
+        localStorage.setItem("jarvis_ip", cleanIp);
+        window.location.href = `http://${cleanIp}:5000/jarvis.html`;
+    }
+}
+
+// ==========================================
+// 2. GLOBAL VARIABLES
+// ==========================================
 const API_URL = 'https://script.google.com/macros/s/AKfycbwR3LH7qkeNNNZgEhOSMFqXZcO9xyVF7DiQau7gDxcTJ6ljtgD4EwrIm8tmC-B-fMpMag/exec'; 
 let currentUser = null;
 let currentPass = null;
 
-// --- Jarvis Direct Mode Variables ---
-const JARVIS_URL = `/chat`;
+// Always uses relative path because it's hosted locally
+const JARVIS_URL = `/chat`; 
 const MIC_SVG = `<svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>`;
 const STOP_SVG = `<svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12"></rect></svg>`;
 
 // ==========================================
-// 2. INITIALIZATION (Document Ready)
+// 3. INITIALIZATION (Document Ready)
 // ==========================================
 $(document).ready(function() {
-    // --- Auth Initialization ---
     toggleLogoutButton(false);
     var savedUser = sessionStorage.getItem('currentUser');
     var savedPass = sessionStorage.getItem('currentPass');
@@ -27,7 +48,6 @@ $(document).ready(function() {
         toggleLogoutButton(true);
     }
 
-    // --- Inventory Event Bindings ---
     $('#mobile-search-input').on('keyup', function() {
         if ($.fn.DataTable.isDataTable('#inventory')) {
             $('#inventory').DataTable().search(this.value).draw();
@@ -42,7 +62,6 @@ $(document).ready(function() {
         }
     });
 
-    // --- Jarvis Event Bindings ---
     $('#chat-input').on('keypress', function (e) {
         if(e.which === 13) {
             e.preventDefault();
@@ -56,9 +75,6 @@ $(document).ready(function() {
     });
 });
 
-// ==========================================
-// 3. AUTHENTICATION LOGIC
-// ==========================================
 function toggleLogoutButton(show) {
     if (show) $('#logout-section').show(); else $('#logout-section').hide();
 }
@@ -110,16 +126,18 @@ function sendText() {
         speakText(reply);
     })
     .catch(err => {
+        // Silently ignore errors if user is leaving the page
         if (window.isNavigating) return; 
 
         console.error("Jarvis Error:", err);
         $('#send-btn').prop('disabled', false).css('opacity', '1');
         
-        let newIp = prompt("Connection failed! The IP address may have changed.\n\nPlease enter the new IP shown on the Arduino Display (e.g., 192.168.1.10):");
+        let rawIp = prompt("Connection failed! The IP address may have changed.\n\nPlease enter the new IP shown on the Arduino Display (e.g., 192.168.1.10):");
         
-        if (newIp) {
-            newIp = newIp.trim();
-            window.location.href = `http://${newIp}:5000/jarvis.html`;
+        if (rawIp) {
+            let cleanIp = extractCleanIp(rawIp);
+            localStorage.setItem("jarvis_ip", cleanIp);
+            window.location.href = `http://${cleanIp}:5000/jarvis.html`;
         } else {
             addChatMsg(`⚠️ Connection failed. Please ensure your Python server is running.`, false);
         }
